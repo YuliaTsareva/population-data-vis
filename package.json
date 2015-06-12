@@ -1,0 +1,27 @@
+{
+  "name": "Projects",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^2.9.27",
+    "d3": "^3.5.5"
+  },
+  "devDependencies": {
+    "browserify": "^10.2.4",
+    "gulp": "^3.9.0",
+    "gulp-connect": "^2.2.0",
+    "gulp-jshint": "^1.11.0",
+    "gulp-open": "^0.3.2",
+    "gulp-watch": "^4.2.4",
+    "vinyl-source-stream": "^1.1.0"
+  }
+}
