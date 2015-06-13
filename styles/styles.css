@@ -1,0 +1,41 @@
+
+body {
+    font-family: sans-serif;
+    margin: 30px;
+}
+
+h1 {
+    font-weight: 300;
+    font-size: 24px;
+}
+
+.x-axis line, .y-axis line, .y-axis path {
+    fill: none;
+    stroke: black;
+    stroke-width: 1px;
+}
+
+.x-axis path {
+    display: none;
+}
+
+.tick {
+    font-size: 10px;
+}
+
+.axis-label {
+    font-size: 11px;
+    text-anchor: end;
+}
+
+div.tooltip {
+    position: absolute;
+    max-width: 200px;
+    height: auto;
+    padding: 5px;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    font-size: 12px;
+}
