@@ -28,6 +28,11 @@ h1 {
     text-anchor: end;
 }
 
+.total-label {
+    font-size: 14px;
+    text-anchor: end;
+}
+
 div.tooltip {
     position: absolute;
     max-width: 200px;
