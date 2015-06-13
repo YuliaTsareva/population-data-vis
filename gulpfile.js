@@ -7,11 +7,13 @@ var gulp = require('gulp'),
 	browserify = require('browserify'),
 	source = require('vinyl-source-stream'),
 	open = require('gulp-open'),
+	babel = require('gulp-babel'),
 
 	paths = {
 		html: './app/index.html',
 		css: './app/styles/**/*.css',
-		js: './app/js/**/*.js'
+		js: './app/js/**/*.js',
+		es5: './app/.es5'
 	};
 
 gulp.task('html', function () {
@@ -31,8 +33,14 @@ gulp.task('lint', function() {
 		.pipe(jshint.reporter('default'));
 });
 
+gulp.task('babel', function () {
+	return gulp.src(paths.js)
+		.pipe(babel())
+		.pipe(gulp.dest(paths.es5));
+});
+
 gulp.task('browserify', function() {
-	return browserify('./app/js/app.js', {debug: true})
+	return browserify('./app/.es5/app.js', {debug: true})
 		.bundle()
 		.pipe(source('app.min.js'))
 		.pipe(gulp.dest('./app/dist/js/'))
@@ -61,9 +69,9 @@ gulp.task('watch', function() {
 
 	gulp.watch([paths.html], ['html']);
 	gulp.watch([paths.css], ['css']);
-	gulp.watch([paths.js], ['lint', 'browserify']);
+	gulp.watch([paths.js], ['lint', 'babel', 'browserify']);
 });
 
 gulp.task('default', function() {
-	gulp.start('html', 'css', 'lint', 'browserify', 'watch', 'open');
+	gulp.start('html', 'css', 'lint', 'babel', 'browserify', 'watch', 'open');
 });

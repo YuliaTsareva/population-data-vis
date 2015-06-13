@@ -12,4 +12,3 @@ loader.getCountries(DATA_PATH)
 	.then(function (countries) {
 		topCountries.show(countries, YEAR)
 	});
-

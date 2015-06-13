@@ -60,9 +60,7 @@ function getCountries(path) {
 
 function filterCountriesData(data) {
 
-	return data.filter(function (d) {
-		return !isNotCountry[d.countryName];
-	});
+	return data.filter(d => !isNotCountry[d.countryName]);
 }
 
 function createCountry(d) {
