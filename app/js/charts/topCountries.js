@@ -1,19 +1,32 @@
 
 var d3 = require('d3');
 
+var chart = require('./common.js');
+
 var HEADER = 'Most Populated Countries in the World (2013)';
+var TOP_COUNT = 10;
 
 var populationFormat = d3.format(".2s");
 var commaFormat = d3.format(',');
 
-function show(countries) {
+function show(countries, year) {
 
 	if (countries.length === 0) {
 		return;
 	}
 
-	var topCount = 10;
-	var topCountries = countries.slice(0, topCount);
+	var temp = countries.map(function(d) {
+		return {
+			name: d.name,
+			population: d.population[year]
+		};
+	});
+
+	temp = temp.sort(function (a, b) {
+		return d3.descending(a.population, b.population);
+	});
+
+	var topCountries = temp.slice(0, TOP_COUNT);
 
 	showTopCountries(topCountries);
 }
@@ -28,9 +41,7 @@ function showTopCountries(countries) {
 	var padding = 40;
 	var leftPadding = 60;
 
-	d3.select('body')
-		.append('h1')
-		.text(HEADER);
+	chart.showHeader(HEADER);
 
 	var svg = d3.select('body')
 		.append('svg')
@@ -50,8 +61,12 @@ function showTopCountries(countries) {
 		.domain([0, maxPopulation])
 		.range([height - bottomPadding, topPadding]);
 
-	var xAxisGen = d3.svg.axis().scale(xScale).orient('bottom').ticks(4);
+	var xAxisGen = d3.svg.axis().scale(xScale).orient('bottom');
 	var yAxisGen = d3.svg.axis().scale(yScale).orient('left').tickFormat(formatPopulationLabel);
+
+	if (countries.length > 10) {
+		xAxisGen.tickValues([]);
+	}
 
 	var xAxis = svg.append('g')
 		.call(xAxisGen)

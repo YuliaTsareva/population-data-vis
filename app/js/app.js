@@ -1,11 +1,15 @@
 'use strict';
 
 var loader = require('./loader');
-var preprocessor = require('./preprocessor');
-var visualizer = require('./visualizer');
+
+var topCountries = require('./charts/topCountries');
 
 var DATA_PATH = 'data/population.csv';
 
+var YEAR = 2013;
+
 loader.getCountries(DATA_PATH)
-	  .then(preprocessor.sortPopulationDesc)
-	  .then(visualizer.show);
+	.then(function (countries) {
+		topCountries.show(countries, YEAR)
+	});
+
