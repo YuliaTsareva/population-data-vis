@@ -8,7 +8,7 @@ var DATA_PATH = 'data/population.csv';
 
 var YEAR = 2013;
 
-loader.getCountries(DATA_PATH)
-	.then(function (countries) {
-		topCountries.show(countries, YEAR)
+loader.getPopulationData(DATA_PATH)
+	.then(function (data) {
+		topCountries.show(data, YEAR)
 	});
