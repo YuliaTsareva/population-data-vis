@@ -1,4 +1,5 @@
 var d3 = require('d3');
+var _ = require('underscore');
 
 var Promise = require("bluebird");
 var csv = Promise.promisify(d3.csv);
@@ -43,13 +44,23 @@ var shortCountryNames = {
 	'United Kingdom': 'UK'
 };
 
-function getCountries(path) {
+function getPopulationData(path) {
 
 	return csv(path)
 		.then(function (data) {
 
 			var countriesData = filterCountriesData(data);
-			return countriesData.map(createCountry);
+			var countries = countriesData.map(createCountry);
+
+			var worldData = _.findWhere(data, {countryName: 'World'});
+			var world = {
+				population: createPopulationPerYear(worldData)
+			};
+
+			return {
+				countries: countries,
+				world: world
+			}
 		})
 		.catch(function (err) {
 
@@ -84,4 +95,4 @@ function createPopulationPerYear(d) {
 	return population;
 }
 
-module.exports.getCountries = getCountries;
+module.exports.getPopulationData = getPopulationData;

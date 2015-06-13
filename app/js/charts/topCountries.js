@@ -8,17 +8,23 @@ var TOP_COUNT = 10;
 
 var populationFormat = d3.format(".2s");
 var commaFormat = d3.format(',');
+var percentageFormat = d3.format('%');
 
-function show(countries, year) {
+function show(data, year) {
+
+	var countries = data.countries;
 
 	if (countries.length === 0) {
 		return;
 	}
 
+	var worldPopulation = data.world.population[year];
+
 	var temp = countries.map(function(d) {
 		return {
 			name: d.name,
-			population: d.population[year]
+			population: d.population[year],
+			percentageOfWorld: d.population[year] * 1.0 / worldPopulation
 		};
 	});
 
@@ -28,10 +34,10 @@ function show(countries, year) {
 
 	var topCountries = temp.slice(0, TOP_COUNT);
 
-	showTopCountries(topCountries);
+	showTopCountries(topCountries, worldPopulation);
 }
 
-function showTopCountries(countries) {
+function showTopCountries(countries, worldPopulation) {
 
 	var width = 600;
 	var height = 400;
@@ -98,6 +104,14 @@ function showTopCountries(countries) {
 		})
 		.style('opacity', 0);
 
+	svg.append('text')
+		.attr({
+			x: width - padding - 20,
+			y: topPadding + 20,
+			class: 'total-label'
+		})
+		.text('Total ' + commaFormat(worldPopulation));
+
 	svg.selectAll('rect')
 		.data(countries)
 		.enter()
@@ -147,7 +161,12 @@ function formatPopulationLabel(country) {
 }
 
 function getTooltip(country) {
-	return '<b>' + country.name + '</b><br>' + commaFormat(country.population);
+
+	var population = commaFormat(country.population);
+	var percentage = percentageFormat(country.percentageOfWorld);
+
+	return `<b>${country.name}</b>
+		    <br />${population} (${percentage})`;
 }
 
 module.exports.show = show;
