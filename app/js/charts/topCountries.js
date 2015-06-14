@@ -39,7 +39,7 @@ function show(data, year) {
 
 function showTopCountries(countries, worldPopulation) {
 
-	var width = 600;
+	var width = 500;
 	var height = 400;
 
 	var topPadding = 10;
@@ -61,7 +61,7 @@ function showTopCountries(countries, worldPopulation) {
 
 	var xScale = d3.scale.ordinal()
 		.domain(countries.map(function(d) { return d.name; }))
-		.rangeRoundBands([leftPadding, width - padding], .1);
+		.rangeRoundBands([leftPadding, width - padding], 0.1);
 
 	var yScale = d3.scale.linear()
 		.domain([0, maxPopulation])

@@ -1,8 +1,8 @@
 var d3 = require('d3');
 var _ = require('underscore');
 
-var Promise = require("bluebird");
-var csv = Promise.promisify(d3.csv);
+var BluebirdPromise = require("bluebird");
+var csv = BluebirdPromise.promisify(d3.csv);
 
 var Country = require('./country');
 
@@ -60,7 +60,7 @@ function getPopulationData(path) {
 			return {
 				countries: countries,
 				world: world
-			}
+			};
 		})
 		.catch(function (err) {
 
