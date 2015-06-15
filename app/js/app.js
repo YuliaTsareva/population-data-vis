@@ -10,5 +10,5 @@ var YEAR = 2013;
 
 loader.getPopulationData(DATA_PATH)
 	.then(function (data) {
-		topCountries.show(data, YEAR)
+		topCountries.show(data, YEAR);
 	});
