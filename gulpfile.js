@@ -55,7 +55,7 @@ gulp.task('babel', function () {
 		.pipe(gulp.dest(target.es5));
 });
 
-gulp.task('browserify', function() {
+gulp.task('browserify', ['babel'], function() {
 	return browserify('./app/.es5/app.js', {debug: true})
 		.bundle()
 		.pipe(source('app.min.js'))
@@ -63,14 +63,15 @@ gulp.task('browserify', function() {
 		.pipe(connect.reload());
 });
 
-gulp.task('server', function() {
+gulp.task('server', ['html', 'css', 'data', 'lint', 'browserify'], function(done) {
 	connect.server({
 		root: 'app/dist',
 		livereload: true
 	});
+	done();
 });
 
-gulp.task('open', function () {
+gulp.task('open', ['server'], function () {
 	var options = {
 		url: 'http://localhost:8080',
 		app: 'Google Chrome'
@@ -89,6 +90,6 @@ gulp.task('watch', function() {
 	gulp.watch([paths.js], ['lint', 'babel', 'browserify']);
 });
 
-gulp.task('default', function() {
-	gulp.start('html', 'css', 'data', 'lint', 'babel', 'browserify', 'watch', 'open');
-});
+gulp.task('build', ['html', 'css', 'data', 'lint', 'babel', 'browserify']);
+gulp.task('default', ['build', 'watch', 'open']);
+
