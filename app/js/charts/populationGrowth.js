@@ -134,6 +134,8 @@ function show(data) {
 
 	var label = svg.append('text');
 
+	var timer;
+
 	path
 		.on('mouseover', function() {
 
@@ -153,6 +155,11 @@ function show(data) {
 			//	});
 		})
 		.on('mousemove', function() {
+
+			if (timer) {
+				clearTimeout(timer);
+				timer = null;
+			}
 			var location = d3.mouse(this);
 			var year = d3.round(xScale.invert(location[0]));
 
@@ -180,13 +187,15 @@ function show(data) {
 				});
 		})
 		.on('mouseout', function() {
-			//vertical.attr({
-			//	height: 0
-			//});
-			//horizontal.attr({
-			//	width: 0
-			//});
-			//label.text('');
+			timer = setTimeout(function() {
+				vertical.attr({
+					height: 0
+				});
+				horizontal.attr({
+					width: 0
+				});
+				label.text('');
+			}, 200);
 		});
 }
 
