@@ -14,7 +14,5 @@ var YEAR = 2013;
 loader.getPopulationData(DATA_PATH)
 	.then(function (data) {
 		topCountries.show(data, YEAR);
-
-		var china = _.findWhere(data.countries, {name: 'USA'});
-		populationGrowth.show(china);
+		populationGrowth.show(data.world);
 	});
