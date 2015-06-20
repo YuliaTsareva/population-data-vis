@@ -44,3 +44,9 @@ div.tooltip {
     pointer-events: none;
     font-size: 12px;
 }
+
+.chart {
+    display: inline-block;
+    float: left;
+    margin-left: 20px;
+}

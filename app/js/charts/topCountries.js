@@ -39,7 +39,7 @@ function show(data, year) {
 
 function showTopCountries(countries, worldPopulation) {
 
-	var width = 600;
+	var width = 550;
 	var height = 400;
 
 	var topPadding = 10;
@@ -47,21 +47,30 @@ function showTopCountries(countries, worldPopulation) {
 	var padding = 40;
 	var leftPadding = 60;
 
-	chart.showHeader(HEADER);
-
-	var svg = d3.select('body')
-		.append('svg')
+	var container = d3.select('body')
+		.append('div')
 		.attr({
 			width: width,
 			height: height,
-			id: 'topCountriesBarChart'
+			id: 'topCountriesBarChart',
+			class: 'chart'
+		});
+
+	container.append('h1')
+		.text(HEADER);
+
+	var svg = container
+		.append('svg')
+		.attr({
+			width: width,
+			height: height
 		});
 
 	var maxPopulation = countries[0].population;
 
 	var xScale = d3.scale.ordinal()
 		.domain(countries.map(function(d) { return d.name; }))
-		.rangeRoundBands([leftPadding, width - padding], .1);
+		.rangeRoundBands([leftPadding, width - padding], 0.1);
 
 	var yScale = d3.scale.linear()
 		.domain([0, maxPopulation])
@@ -140,6 +149,8 @@ function showTopCountries(countries, worldPopulation) {
 
 			d3.select(this).transition().duration(300)
 				.style("fill", "orange");
+
+			console.log(d.name);
 		})
 		.on('mousemove', function(d) {
 			tooltip
