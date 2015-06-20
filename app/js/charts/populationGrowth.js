@@ -54,10 +54,6 @@ function show(data) {
 		.domain([minYear, maxYear])
 		.range([leftPadding, width - padding]);
 
-	//var xScale = d3.scale.ordinal()
-	//	.domain(years)
-	//	.rangeRoundBands([leftPadding, width - padding], 0);
-
 	var yScale = d3.scale.linear()
 		.domain([0, maxPopulation])
 		.range([height - bottomPadding, topPadding]);
@@ -117,7 +113,6 @@ function show(data) {
 			x: xScale(minYear),
 			y: 0,
 			width: 0,
-			//width: xScale(year),
 			height: 1,
 			fill: 'darkorange'
 		});
@@ -128,7 +123,6 @@ function show(data) {
 			y: 0,
 			width: 1,
 			height: 0,
-			//height: height - yScale(data.population[year]) - bottomPadding,
 			fill: 'darkorange'
 		});
 
@@ -137,23 +131,6 @@ function show(data) {
 	var timer;
 
 	path
-		.on('mouseover', function() {
-
-			var location = d3.mouse(this);
-			var year = d3.round(xScale.invert(location[0]));
-
-			console.log(year, data.population[year]);
-
-
-			//svg.append('rect')
-			//	.attr({
-			//		x: 0,
-			//		y: yScale(data.population[year]),
-			//		width: xScale(year),
-			//		height: 2,
-			//		fill: 'orange'
-			//	});
-		})
 		.on('mousemove', function() {
 
 			if (timer) {
