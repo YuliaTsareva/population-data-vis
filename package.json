@@ -1,15 +1,13 @@
 {
-  "name": "Projects",
+  "name": "population-data-visualization",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
   "scripts": {
+    "start": "gulp",
+    "lint": "eslint app/**/*.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Yulia Tsareva",
   "license": "ISC",
   "dependencies": {
     "bluebird": "^2.9.27",
@@ -25,5 +23,8 @@
     "gulp-open": "^0.3.2",
     "gulp-watch": "^4.2.4",
     "vinyl-source-stream": "^1.1.0"
+    "eslint": "3.8.1",
+    "eslint-config-airbnb-base": "9.0.0",
+    "eslint-plugin-import": "2.0.1",
   }
 }
