@@ -1,5 +1,7 @@
 import * as d3 from 'd3';
 
+const populationFormat = d3.format('.2s');
+
 export default class Chart {
     constructor() {
         this.width = 550;
@@ -38,5 +40,9 @@ export default class Chart {
                 width: this.width,
                 height: this.height
             });
+    }
+
+    static formatPopulationLabel(country) {
+        return populationFormat(country).replace(/G/, 'B');
     }
 }

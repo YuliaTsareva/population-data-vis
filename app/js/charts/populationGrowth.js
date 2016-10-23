@@ -1,8 +1,10 @@
 import * as d3 from 'd3';
 import * as _ from 'underscore';
 import Chart from './chart';
+import config from './config';
 
-const populationFormat = d3.format('.3s');
+const MIN_YEAR = 1960;
+const MAX_YEAR = 2013;
 
 export default class WorldPopulationGrowthChart extends Chart {
     constructor() {
@@ -13,70 +15,25 @@ export default class WorldPopulationGrowthChart extends Chart {
     show(data) {
         this.createContainer();
 
-        const minYear = 1960;
-        const maxYear = 2013;
+        this.years = _.keys(data.population).sort();
 
-        const years = _.keys(data.population).sort();
+        this.population = [];
 
-        const population = [];
-
-        _.each(years, year => {
-            population.push(data.population[year]);
+        _.each(this.years, year => {
+            this.population.push(data.population[year]);
         });
 
-        const maxPopulation = d3.max(population);
+        const xScale = this.createXScale();
+        const yScale = this.createYScale();
 
-        const xScale = d3.scale.linear()
-            .domain([minYear, maxYear])
-            .range([this.leftPadding, this.width - this.padding]);
+        this.addXAxis(xScale);
+        this.addYAxis(yScale);
 
-        const yScale = d3.scale.linear()
-            .domain([0, maxPopulation])
-            .range([this.height - this.bottomPadding, this.topPadding]);
-
-        const yearLabels = _.filter(years, year => year % 5 === 0);
-
-        const xAxisGen = d3.svg.axis()
-            .scale(xScale)
-            .orient('bottom')
-            .tickValues(yearLabels)
-            .tickFormat(d3.format('d'));
-
-        const yAxisGen = d3.svg.axis()
-            .scale(yScale)
-            .orient('left')
-            .tickFormat(WorldPopulationGrowthChart.formatPopulationLabel);
-
-        // xAxis
-        this.svg.append('g')
-            .call(xAxisGen)
-            .attr({
-                class: 'x-axis',
-                transform: `translate(0, ${this.height - this.bottomPadding})`
-            });
-
-        // yAxis
-        this.svg.append('g')
-            .call(yAxisGen)
-            .attr({
-                class: 'y-axis',
-                transform: `translate(${this.padding}, 0)`
-            })
-            .append('text')
-            .attr({
-                transform: 'rotate(-90)',
-                x: -10,
-                y: 6,
-                dy: '.71em',
-                class: 'axis-label'
-            })
-            .text('Population');
-
-        const pathData = population.slice();
+        const pathData = this.population.slice();
         pathData.push(0, 0);
 
-        const pathYears = years.slice();
-        pathYears.push(years[years.length - 1], years[0]);
+        const pathYears = this.years.slice();
+        pathYears.push(this.years[this.years.length - 1], this.years[0]);
 
         const lineFunc = d3.svg.line()
             .x((d, i) => xScale(pathYears[i]))
@@ -86,19 +43,19 @@ export default class WorldPopulationGrowthChart extends Chart {
         const path = this.svg.append('path')
             .attr({
                 d: lineFunc(pathData),
-                'stroke': 'steelblue',
+                'stroke': config.mainColor,
                 'stroke-width': 1,
-                'fill': 'steelblue',
+                'fill': config.mainColor,
                 'class': 'path-weight'
             });
 
         const horizontal = this.svg.append('rect')
             .attr({
-                x: xScale(minYear),
+                x: xScale(MIN_YEAR),
                 y: 0,
                 width: 0,
                 height: 1,
-                fill: 'darkorange'
+                fill: config.secondColor
             });
 
         const vertical = this.svg.append('rect')
@@ -107,7 +64,7 @@ export default class WorldPopulationGrowthChart extends Chart {
                 y: 0,
                 width: 1,
                 height: 0,
-                fill: 'darkorange'
+                fill: config.secondColor
             });
 
         const label = this.svg.append('text');
@@ -134,11 +91,11 @@ export default class WorldPopulationGrowthChart extends Chart {
                 horizontal
                     .attr({
                         y: yScale(data.population[year]),
-                        width: xScale(year) - xScale(minYear)
+                        width: xScale(year) - xScale(MIN_YEAR)
                     });
 
                 label
-                    .text(`${WorldPopulationGrowthChart.formatPopulationLabel(data.population[year])} in ${year}`)
+                    .text(`${Chart.formatPopulationLabel(data.population[year])} in ${year}`)
                     .attr({
                         x: xScale(year),
                         y: yScale(data.population[year]) - 3,
@@ -159,7 +116,57 @@ export default class WorldPopulationGrowthChart extends Chart {
             });
     }
 
-    static formatPopulationLabel(country) {
-        return populationFormat(country).replace(/G/, 'B');
+    createXScale() {
+        return d3.scale.linear()
+            .domain([MIN_YEAR, MAX_YEAR])
+            .range([this.leftPadding, this.width - this.padding]);
+    }
+
+    createYScale() {
+        const maxPopulation = d3.max(this.population);
+
+        return d3.scale.linear()
+            .domain([0, maxPopulation])
+            .range([this.height - this.bottomPadding, this.topPadding]);
+    }
+
+    addXAxis(xScale) {
+        const yearLabels = _.filter(this.years, year => year % 5 === 0);
+
+        const xAxisGen = d3.svg.axis()
+            .scale(xScale)
+            .orient('bottom')
+            .tickValues(yearLabels)
+            .tickFormat(d3.format('d'));
+
+        this.svg.append('g')
+            .call(xAxisGen)
+            .attr({
+                class: 'x-axis',
+                transform: `translate(0, ${this.height - this.bottomPadding})`
+            });
+    }
+
+    addYAxis(yScale) {
+        const yAxisGen = d3.svg.axis()
+            .scale(yScale)
+            .orient('left')
+            .tickFormat(Chart.formatPopulationLabel);
+
+        this.svg.append('g')
+            .call(yAxisGen)
+            .attr({
+                class: 'y-axis',
+                transform: `translate(${this.padding}, 0)`
+            })
+            .append('text')
+            .attr({
+                transform: 'rotate(-90)',
+                x: -10,
+                y: 6,
+                dy: '.71em',
+                class: 'axis-label'
+            })
+            .text('Population');
     }
 }
