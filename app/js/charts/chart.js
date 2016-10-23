@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 
 export default class Chart {
-    constructor(id) {
+    constructor() {
         this.width = 550;
         this.height = 400;
 
@@ -9,8 +9,6 @@ export default class Chart {
         this.bottomPadding = 40;
         this.padding = 40;
         this.leftPadding = 60;
-
-        this.id = id;
     }
 
     createContainer() {
@@ -19,7 +17,6 @@ export default class Chart {
             .attr({
                 width: this.width,
                 height: this.height,
-                id: this.id,
                 class: 'chart'
             });
 

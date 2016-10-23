@@ -6,7 +6,7 @@ const populationFormat = d3.format('.3s');
 
 export default class WorldPopulationGrowthChart extends Chart {
     constructor() {
-        super('populationGrowthChart');
+        super();
         this.header = 'World Population Growth';
     }
 

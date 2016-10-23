@@ -11,7 +11,7 @@ const percentageFormat = d3.format('%');
 
 export default class MostPopulatedCountriesChart extends Chart {
     constructor() {
-        super('topCountriesBarChart');
+        super();
         this.header = 'Most Populated Countries in the World (2013)';
     }
 
