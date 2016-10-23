@@ -1,18 +1,14 @@
-'use strict';
+const loader = require('./loader');
 
-var _ = require('underscore');
+const topCountries = require('./charts/topCountries');
+const populationGrowth = require('./charts/populationGrowth');
 
-var loader = require('./loader');
+const DATA_PATH = 'data/population.csv';
 
-var topCountries = require('./charts/topCountries');
-var populationGrowth = require('./charts/populationGrowth');
-
-var DATA_PATH = 'data/population.csv';
-
-var YEAR = 2013;
+const YEAR = 2013;
 
 loader.getPopulationData(DATA_PATH)
-	.then(function (data) {
-		topCountries.show(data, YEAR);
-		populationGrowth.show(data.world);
-	});
+    .then(data => {
+        topCountries.show(data, YEAR);
+        populationGrowth.show(data.world);
+    });

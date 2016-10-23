@@ -44,14 +44,14 @@ gulp.task('data', function () {
 });
 
 gulp.task('lint', function() {
-	gulp.src(paths.js)
-		.pipe(jshint())
-		.pipe(jshint.reporter('default'));
+	// gulp.src(paths.js)
+	// 	.pipe(jshint())
+	// 	.pipe(jshint.reporter('default'));
 });
 
 gulp.task('babel', function () {
 	return gulp.src(paths.js)
-		.pipe(babel())
+		.pipe(babel({presets: ['es2015']}))
 		.pipe(gulp.dest(target.es5));
 });
 
