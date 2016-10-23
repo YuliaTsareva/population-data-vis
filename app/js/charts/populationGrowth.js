@@ -1,185 +1,165 @@
 import * as d3 from 'd3';
 import * as _ from 'underscore';
-
-const HEADER = 'World Population Growth';
+import Chart from './chart';
 
 const populationFormat = d3.format('.3s');
 
-function show(data) {
-    const width = 550;
-    const height = 400;
+export default class WorldPopulationGrowthChart extends Chart {
+    constructor() {
+        super('populationGrowthChart');
+        this.header = 'World Population Growth';
+    }
 
-    const topPadding = 10;
-    const bottomPadding = 40;
-    const padding = 40;
-    const leftPadding = 60;
+    show(data) {
+        this.createContainer();
 
-    const container = d3.select('body')
-        .append('div')
-        .attr({
-            width,
-            height,
-            id: 'populationGrowthChart',
-            class: 'chart'
+        const minYear = 1960;
+        const maxYear = 2013;
+
+        const years = _.keys(data.population).sort();
+
+        const population = [];
+
+        _.each(years, year => {
+            population.push(data.population[year]);
         });
 
-    container.append('h1')
-        .text(HEADER);
+        const maxPopulation = d3.max(population);
 
-    const svg = container
-        .append('svg')
-        .attr({
-            width,
-            height
-        });
+        const xScale = d3.scale.linear()
+            .domain([minYear, maxYear])
+            .range([this.leftPadding, this.width - this.padding]);
 
-    const minYear = 1960;
-    const maxYear = 2013;
+        const yScale = d3.scale.linear()
+            .domain([0, maxPopulation])
+            .range([this.height - this.bottomPadding, this.topPadding]);
 
-    const years = _.keys(data.population).sort();
+        const yearLabels = _.filter(years, year => year % 5 === 0);
 
-    const population = [];
+        const xAxisGen = d3.svg.axis()
+            .scale(xScale)
+            .orient('bottom')
+            .tickValues(yearLabels)
+            .tickFormat(d3.format('d'));
 
-    _.each(years, year => {
-        population.push(data.population[year]);
-    });
+        const yAxisGen = d3.svg.axis()
+            .scale(yScale)
+            .orient('left')
+            .tickFormat(WorldPopulationGrowthChart.formatPopulationLabel);
 
-    const maxPopulation = d3.max(population);
+        // xAxis
+        this.svg.append('g')
+            .call(xAxisGen)
+            .attr({
+                class: 'x-axis',
+                transform: `translate(0, ${this.height - this.bottomPadding})`
+            });
 
-    const xScale = d3.scale.linear()
-        .domain([minYear, maxYear])
-        .range([leftPadding, width - padding]);
+        // yAxis
+        this.svg.append('g')
+            .call(yAxisGen)
+            .attr({
+                class: 'y-axis',
+                transform: `translate(${this.padding}, 0)`
+            })
+            .append('text')
+            .attr({
+                transform: 'rotate(-90)',
+                x: -10,
+                y: 6,
+                dy: '.71em',
+                class: 'axis-label'
+            })
+            .text('Population');
 
-    const yScale = d3.scale.linear()
-        .domain([0, maxPopulation])
-        .range([height - bottomPadding, topPadding]);
+        const pathData = population.slice();
+        pathData.push(0, 0);
 
-    const yearLabels = _.filter(years, year => year % 5 === 0);
+        const pathYears = years.slice();
+        pathYears.push(years[years.length - 1], years[0]);
 
-    const xAxisGen = d3.svg.axis()
-        .scale(xScale)
-        .orient('bottom')
-        .tickValues(yearLabels)
-        .tickFormat(d3.format('d'));
+        const lineFunc = d3.svg.line()
+            .x((d, i) => xScale(pathYears[i]))
+            .y(d => yScale(d))
+            .interpolate('linear');
 
-    const yAxisGen = d3.svg.axis()
-        .scale(yScale)
-        .orient('left')
-        .tickFormat(formatPopulationLabel);
+        const path = this.svg.append('path')
+            .attr({
+                d: lineFunc(pathData),
+                'stroke': 'steelblue',
+                'stroke-width': 1,
+                'fill': 'steelblue',
+                'class': 'path-weight'
+            });
 
-    // xAxis
-    svg.append('g')
-        .call(xAxisGen)
-        .attr({
-            class: 'x-axis',
-            transform: `translate(0, ${height - bottomPadding})`
-        });
+        const horizontal = this.svg.append('rect')
+            .attr({
+                x: xScale(minYear),
+                y: 0,
+                width: 0,
+                height: 1,
+                fill: 'darkorange'
+            });
 
-    // yAxis
-    svg.append('g')
-        .call(yAxisGen)
-        .attr({
-            class: 'y-axis',
-            transform: `translate(${padding}, 0)`
-        })
-        .append('text')
-        .attr({
-            transform: 'rotate(-90)',
-            x: -10,
-            y: 6,
-            dy: '.71em',
-            class: 'axis-label'
-        })
-        .text('Population');
+        const vertical = this.svg.append('rect')
+            .attr({
+                x: 0,
+                y: 0,
+                width: 1,
+                height: 0,
+                fill: 'darkorange'
+            });
 
-    const pathData = population.slice();
-    pathData.push(0, 0);
+        const label = this.svg.append('text');
 
-    const pathYears = years.slice();
-    pathYears.push(years[years.length - 1], years[0]);
+        let timer;
 
-    const lineFunc = d3.svg.line()
-        .x((d, i) => xScale(pathYears[i]))
-        .y(d => yScale(d))
-        .interpolate('linear');
+        const that = this;
+        path
+            .on('mousemove', function () {
+                if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
+                }
+                const location = d3.mouse(this);
+                const year = d3.round(xScale.invert(location[0]));
 
-    const path = svg.append('path')
-        .attr({
-            d: lineFunc(pathData),
-            'stroke': 'steelblue',
-            'stroke-width': 1,
-            'fill': 'steelblue',
-            'class': 'path-weight'
-        });
+                vertical
+                    .attr({
+                        x: xScale(year),
+                        y: yScale(data.population[year]),
+                        height: that.height - yScale(data.population[year]) - that.bottomPadding
+                    });
 
-    const horizontal = svg.append('rect')
-        .attr({
-            x: xScale(minYear),
-            y: 0,
-            width: 0,
-            height: 1,
-            fill: 'darkorange'
-        });
+                horizontal
+                    .attr({
+                        y: yScale(data.population[year]),
+                        width: xScale(year) - xScale(minYear)
+                    });
 
-    const vertical = svg.append('rect')
-        .attr({
-            x: 0,
-            y: 0,
-            width: 1,
-            height: 0,
-            fill: 'darkorange'
-        });
+                label
+                    .text(`${WorldPopulationGrowthChart.formatPopulationLabel(data.population[year])} in ${year}`)
+                    .attr({
+                        x: xScale(year),
+                        y: yScale(data.population[year]) - 3,
+                        'text-anchor': 'end',
+                        'font-size': '12px'
+                    });
+            })
+            .on('mouseout', () => {
+                timer = setTimeout(() => {
+                    vertical.attr({
+                        height: 0
+                    });
+                    horizontal.attr({
+                        width: 0
+                    });
+                    label.text('');
+                }, 200);
+            });
+    }
 
-    const label = svg.append('text');
-
-    let timer;
-
-    path
-        .on('mousemove', function () {
-            if (timer) {
-                clearTimeout(timer);
-                timer = null;
-            }
-            const location = d3.mouse(this);
-            const year = d3.round(xScale.invert(location[0]));
-
-            vertical
-                .attr({
-                    x: xScale(year),
-                    y: yScale(data.population[year]),
-                    height: height - yScale(data.population[year]) - bottomPadding
-                });
-
-            horizontal
-                .attr({
-                    y: yScale(data.population[year]),
-                    width: xScale(year) - xScale(minYear)
-                });
-
-            label
-                .text(`${formatPopulationLabel(data.population[year])} in ${year}`)
-                .attr({
-                    x: xScale(year),
-                    y: yScale(data.population[year]) - 3,
-                    'text-anchor': 'end',
-                    'font-size': '12px'
-                });
-        })
-        .on('mouseout', () => {
-            timer = setTimeout(() => {
-                vertical.attr({
-                    height: 0
-                });
-                horizontal.attr({
-                    width: 0
-                });
-                label.text('');
-            }, 200);
-        });
+    static formatPopulationLabel(country) {
+        return populationFormat(country).replace(/G/, 'B');
+    }
 }
-
-function formatPopulationLabel(country) {
-    return populationFormat(country).replace(/G/, 'B');
-}
-
-module.exports.show = show;

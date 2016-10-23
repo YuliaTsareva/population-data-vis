@@ -1,14 +1,11 @@
-const loader = require('./loader');
-
-const topCountries = require('./charts/topCountries');
-const populationGrowth = require('./charts/populationGrowth');
+import MostPopulatedCountriesChart from './charts/topCountries';
+import WorldPopulationGrowthChart from './charts/populationGrowth';
+import getPopulationData from './getPopulationData';
 
 const DATA_PATH = 'data/population.csv';
 
-const YEAR = 2013;
-
-loader.getPopulationData(DATA_PATH)
+getPopulationData(DATA_PATH)
     .then(data => {
-        topCountries.show(data, YEAR);
-        populationGrowth.show(data.world);
+        new MostPopulatedCountriesChart().show(data);
+        new WorldPopulationGrowthChart().show(data.world);
     });

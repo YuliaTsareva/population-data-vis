@@ -43,7 +43,7 @@ const shortCountryNames = {
     'United Kingdom': 'UK'
 };
 
-function getPopulationData(path) {
+export default function getPopulationData(path) {
     return loadCsv(path)
         .then(data => processData(data))
         .catch(err => {
@@ -98,5 +98,3 @@ function createPopulationPerYear(dataset) {
 
     return population;
 }
-
-module.exports.getPopulationData = getPopulationData;
