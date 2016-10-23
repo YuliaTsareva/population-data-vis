@@ -1,183 +1,179 @@
+/* eslint-disable import/no-duplicates */
+/* eslint-disable no-duplicate-imports */
+import * as d3 from 'd3';
+import {event as currentEvent} from 'd3';
+import Chart from './chart';
+import config from './config';
 
-var d3 = require('d3');
+const TOP_COUNT = 10;
+const YEAR = 2013;
 
-var chart = require('./common.js');
+const TOTAL_LABEL_PADDING = 20;
+const TOOLTIP_OPACITY = 0.85;
 
-var HEADER = 'Most Populated Countries in the World (2013)';
-var TOP_COUNT = 10;
+const commaFormat = d3.format(',');
+const percentageFormat = d3.format('%');
 
-var populationFormat = d3.format(".2s");
-var commaFormat = d3.format(',');
-var percentageFormat = d3.format('%');
+export default class MostPopulatedCountriesChart extends Chart {
+    constructor() {
+        super();
+        this.header = 'Most Populated Countries in the World (2013)';
+    }
 
-function show(data, year) {
+    show(data) {
+        this.worldPopulation = data.world.population[YEAR];
+        this.countries = this.getTopCountries(data);
 
-	var countries = data.countries;
+        this.showTopCountries();
+    }
 
-	if (countries.length === 0) {
-		return;
-	}
+    getTopCountries(data) {
+        let temp = data.countries.map(d => {
+            return {
+                name: d.name,
+                population: d.population[YEAR],
+                percentageOfWorld: d.population[YEAR] * 1.0 / this.worldPopulation
+            };
+        });
 
-	var worldPopulation = data.world.population[year];
+        temp = temp.sort((a, b) => d3.descending(a.population, b.population));
 
-	var temp = countries.map(function(d) {
-		return {
-			name: d.name,
-			population: d.population[year],
-			percentageOfWorld: d.population[year] * 1.0 / worldPopulation
-		};
-	});
+        return temp.slice(0, TOP_COUNT);
+    }
 
-	temp = temp.sort(function (a, b) {
-		return d3.descending(a.population, b.population);
-	});
+    showTopCountries() {
+        this.createContainer();
 
-	var topCountries = temp.slice(0, TOP_COUNT);
+        const xScale = this.createXScale();
+        const yScale = this.createYScale();
 
-	showTopCountries(topCountries, worldPopulation);
+        this.addXAxis(xScale);
+        this.addYAxis(yScale);
+
+        this.addTotalLabel();
+
+        this.addBars(xScale, yScale);
+    }
+
+    createXScale() {
+        return d3.scale.ordinal()
+            .domain(this.countries.map(d => d.name))
+            .rangeRoundBands([this.leftPadding, this.width - this.padding], 0.1);
+    }
+
+    createYScale() {
+        const maxPopulation = this.countries[0].population;
+
+        return d3.scale.linear()
+            .domain([0, maxPopulation])
+            .range([this.height - this.bottomPadding, this.topPadding]);
+    }
+
+    addXAxis(xScale) {
+        const xAxisGen = d3.svg.axis()
+            .scale(xScale)
+            .orient('bottom');
+
+        if (this.countries.length > 10) {
+            xAxisGen.tickValues([]);
+        }
+
+        this.svg.append('g')
+            .call(xAxisGen)
+            .attr({
+                class: 'x-axis',
+                transform: `translate(0, ${(this.height - this.bottomPadding)})`
+            });
+    }
+
+    addYAxis(yScale) {
+        const yAxisGen = d3.svg.axis()
+            .scale(yScale)
+            .orient('left')
+            .tickFormat(Chart.formatPopulationLabel);
+
+        this.svg.append('g')
+            .call(yAxisGen)
+            .attr({
+                class: 'y-axis',
+                transform: `translate(${this.padding}, 0)`
+            })
+            .append('text')
+            .attr({
+                transform: 'rotate(-90)',
+                x: -10,
+                y: 6,
+                dy: '.71em',
+                class: 'axis-label'
+            })
+            .text('Population');
+    }
+
+    addTotalLabel() {
+        this.svg.append('text')
+            .attr({
+                x: this.width - this.padding - TOTAL_LABEL_PADDING,
+                y: this.topPadding + TOTAL_LABEL_PADDING,
+                class: 'total-label'
+            })
+            .text(`Total ${commaFormat(this.worldPopulation)}`);
+    }
+
+    addBars(xScale, yScale) {
+        const tooltip = MostPopulatedCountriesChart.createTooltip();
+
+        this.svg.selectAll('rect')
+            .data(this.countries)
+            .enter()
+            .append('rect')
+            .attr({
+                x: d => xScale(d.name),
+                y: d => yScale(d.population),
+                width: xScale.rangeBand(),
+                height: d => this.height - yScale(d.population) - this.padding,
+                fill: config.mainColor
+            })
+            .on('mouseover', function (country) {
+                tooltip.transition()
+                    .duration(500)
+                    .style('opacity', TOOLTIP_OPACITY);
+
+                tooltip.html(MostPopulatedCountriesChart.getTooltip(country))
+                    .style('left', `${(currentEvent.pageX)}px`)
+                    .style('top', `${(currentEvent.pageY - 28)}px`);
+
+                d3.select(this).transition().duration(300)
+                    .style('fill', config.secondColor);
+            })
+            .on('mousemove', () => {
+                tooltip
+                    .style('left', `${(currentEvent.pageX)}px`)
+                    .style('top', `${(currentEvent.pageY - 40)}px`);
+            })
+            .on('mouseout', function () {
+                tooltip.transition()
+                    .duration(300)
+                    .style('opacity', 0);
+
+                d3.select(this).transition().duration(300)
+                    .style('fill', config.mainColor);
+            });
+    }
+
+    static createTooltip() {
+        return d3.select('body')
+            .append('div')
+            .attr({
+                'class': 'tooltip'
+            })
+            .style('opacity', 0);
+    }
+
+    static getTooltip(country) {
+        const population = commaFormat(country.population);
+        const percentage = percentageFormat(country.percentageOfWorld);
+
+        return `<b>${country.name}</b>
+            <br />${population} (${percentage})`;
+    }
 }
-
-function showTopCountries(countries, worldPopulation) {
-
-	var width = 550;
-	var height = 400;
-
-	var topPadding = 10;
-	var bottomPadding = 40;
-	var padding = 40;
-	var leftPadding = 60;
-
-	var container = d3.select('body')
-		.append('div')
-		.attr({
-			width: width,
-			height: height,
-			id: 'topCountriesBarChart',
-			class: 'chart'
-		});
-
-	container.append('h1')
-		.text(HEADER);
-
-	var svg = container
-		.append('svg')
-		.attr({
-			width: width,
-			height: height
-		});
-
-	var maxPopulation = countries[0].population;
-
-	var xScale = d3.scale.ordinal()
-		.domain(countries.map(function(d) { return d.name; }))
-		.rangeRoundBands([leftPadding, width - padding], 0.1);
-
-	var yScale = d3.scale.linear()
-		.domain([0, maxPopulation])
-		.range([height - bottomPadding, topPadding]);
-
-	var xAxisGen = d3.svg.axis().scale(xScale).orient('bottom');
-	var yAxisGen = d3.svg.axis().scale(yScale).orient('left').tickFormat(formatPopulationLabel);
-
-	if (countries.length > 10) {
-		xAxisGen.tickValues([]);
-	}
-
-	var xAxis = svg.append('g')
-		.call(xAxisGen)
-		.attr({
-			class: 'x-axis',
-			transform: 'translate(0, ' + (height - bottomPadding) + ')'
-		});
-
-	var yAxis = svg.append('g')
-		.call(yAxisGen)
-		.attr({
-			class: 'y-axis',
-			transform: 'translate(' + padding + ', 0)'
-		})
-		.append("text")
-		.attr({
-			transform: "rotate(-90)",
-			x: -10,
-			y: 6,
-			dy: ".71em",
-			class: "axis-label"
-		})
-		.text("Population");
-
-	var tooltip = d3.select('body')
-		.append('div')
-		.attr({
-			'class': 'tooltip'
-		})
-		.style('opacity', 0);
-
-	svg.append('text')
-		.attr({
-			x: width - padding - 20,
-			y: topPadding + 20,
-			class: 'total-label'
-		})
-		.text('Total ' + commaFormat(worldPopulation));
-
-	svg.selectAll('rect')
-		.data(countries)
-		.enter()
-		.append('rect')
-		.attr({
-			x: function(d) {
-				return xScale(d.name);
-			},
-			y: function (d) {
-				return yScale(d.population);
-			},
-			width: xScale.rangeBand(),
-			height: function(d) {
-				return height - yScale(d.population) - padding;
-			},
-			fill: 'steelblue'
-		})
-		.on('mouseover', function(d) {
-			tooltip.transition()
-				.duration(500)
-				.style('opacity', 0.85);
-
-			tooltip.html(getTooltip(d))
-				.style('left', (d3.event.pageX) + 'px')
-				.style('top', (d3.event.pageY - 28) + 'px');
-
-			d3.select(this).transition().duration(300)
-				.style("fill", "orange");
-
-			console.log(d.name);
-		})
-		.on('mousemove', function(d) {
-			tooltip
-				.style('left', (d3.event.pageX) + 'px')
-				.style('top', (d3.event.pageY - 40) + 'px');
-		})
-		.on('mouseout', function(d) {
-			tooltip.transition()
-				.duration(300)
-				.style('opacity', 0);
-
-			d3.select(this).transition().duration(300)
-				.style("fill", "steelblue");
-		});
-}
-
-function formatPopulationLabel(country) {
-	return populationFormat(country).replace(/G/, 'B');
-}
-
-function getTooltip(country) {
-
-	var population = commaFormat(country.population);
-	var percentage = percentageFormat(country.percentageOfWorld);
-
-	return `<b>${country.name}</b>
-		    <br />${population} (${percentage})`;
-}
-
-module.exports.show = show;

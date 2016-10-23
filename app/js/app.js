@@ -1,18 +1,11 @@
-'use strict';
+import MostPopulatedCountriesChart from './charts/topCountries';
+import WorldPopulationGrowthChart from './charts/populationGrowth';
+import getPopulationData from './getPopulationData';
 
-var _ = require('underscore');
+const DATA_PATH = 'data/population.csv';
 
-var loader = require('./loader');
-
-var topCountries = require('./charts/topCountries');
-var populationGrowth = require('./charts/populationGrowth');
-
-var DATA_PATH = 'data/population.csv';
-
-var YEAR = 2013;
-
-loader.getPopulationData(DATA_PATH)
-	.then(function (data) {
-		topCountries.show(data, YEAR);
-		populationGrowth.show(data.world);
-	});
+getPopulationData(DATA_PATH)
+    .then(data => {
+        new MostPopulatedCountriesChart().show(data);
+        new WorldPopulationGrowthChart().show(data.world);
+    });

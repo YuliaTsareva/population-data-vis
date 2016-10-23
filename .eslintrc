@@ -1,0 +1,16 @@
+{
+  "extends": "airbnb-base",
+  "rules": {
+    "arrow-body-style": ["error", "as-needed", {"requireReturnForObjectLiteral": true}],
+    "arrow-parens": ["error", "as-needed"],
+    "comma-dangle": ["error", "never"],
+    "func-names": ["off"],
+    "indent": ["error", 4],
+    "no-console": ["error", {"allow": ["warn", "error"]}],
+    "no-mixed-operators": ["off"],
+    "no-plusplus": ["off"],
+    "no-use-before-define": ["off"],
+    "object-curly-spacing": ["error", "never"],
+    "quote-props": ["off"]
+  }
+}
